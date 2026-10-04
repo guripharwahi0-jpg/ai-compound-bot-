@@ -1,8 +1,20 @@
 import yfinance as yf
 import pandas as pd
 
+from datetime import datetime
+import os
+
 portfolio = pd.read_csv("portfolio.csv")
 
+history_file = "trade_history.csv"
+
+if os.path.exists(history_file):
+    history = pd.read_csv(history_file)
+else:
+    history = pd.DataFrame(
+        columns=["date", "action", "ticker", "reason"]
+    )
+    
 with open("cash.txt", "r") as f:
     cash = float(f.read().strip())
 
@@ -68,6 +80,27 @@ rankings.sort(
 
 top_pick = rankings[0]["ticker"]
 
+today = datetime.now().strftime("%Y-%m-%d")
+
+new_trade = pd.DataFrame([
+    {
+        "date": today,
+        "action": "RECOMMEND_BUY",
+        "ticker": top_pick,
+        "reason": "Top ranked ETF"
+    }
+])
+
+history = pd.concat(
+    [history, new_trade],
+    ignore_index=True
+)
+
+history.to_csv(
+    history_file,
+    index=False
+)
+
 report.append("\n==========")
 report.append("TRADE RECOMMENDATIONS")
 report.append("==========\n")
@@ -99,6 +132,18 @@ report.append(
 
 report.append(
     f"Total Profit: ${profit:.2f}"
+)
+
+report.append("\n==========")
+report.append("TRADE HISTORY")
+report.append("==========")
+
+report.append(
+    f"Total Recorded Trades: {len(history)}"
+)
+
+report.append(
+    f"Latest Recommendation: {top_pick}"
 )
 
 final_report = "\n".join(report)
