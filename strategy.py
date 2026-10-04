@@ -5,18 +5,17 @@ tickers = ["QQQ", "SPY", "XEQT.TO"]
 print("\nAI Compound Bot\n")
 
 for ticker in tickers:
-    data = yf.download(ticker, period="3mo", progress=False)
+    data = yf.download(ticker, period="3mo", auto_adjust=True, progress=False)
 
-    current_price = data["Close"].iloc[-1]
-    moving_average = data["Close"].tail(50).mean()
+    close = data["Close"]
 
-    if current_price > moving_average:
-        signal = "BUY/HOLD"
-    else:
-        signal = "SELL"
+    current_price = float(close.iloc[-1])
+    moving_average = float(close.tail(50).mean())
 
-    print(f"{ticker}")
-    print(f"Current Price: {current_price:.2f}")
-    print(f"50-Day Average: {moving_average:.2f}")
+    signal = "BUY/HOLD" if current_price > moving_average else "SELL"
+
+    print(f"\n{ticker}")
+    print(f"Current Price: ${current_price:.2f}")
+    print(f"50-Day Average: ${moving_average:.2f}")
     print(f"Signal: {signal}")
     print("-" * 30)
