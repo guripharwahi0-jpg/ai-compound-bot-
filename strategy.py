@@ -31,6 +31,19 @@ else:
         ]
     )
 
+benchmark_file = "benchmark.csv"
+
+if os.path.exists(benchmark_file):
+    benchmark = pd.read_csv(benchmark_file)
+else:
+    benchmark = pd.DataFrame(
+        columns=[
+            "date",
+            "qqq_price",
+            "benchmark_value"
+        ]
+    )
+
 with open("cash.txt", "r") as f:
     cash = float(f.read().strip())
 
@@ -142,6 +155,48 @@ starting_capital = 10000
 
 profit = total_value - starting_capital
 
+qqq_data = yf.download(
+    "QQQ",
+    period="3mo",
+    auto_adjust=True,
+    progress=False
+)
+
+qqq_close = qqq_data["Close"].squeeze()
+
+current_qqq_price = float(qqq_close.iloc[-1])
+
+if len(benchmark) > 0:
+
+    initial_price = benchmark.iloc[0]["qqq_price"]
+
+else:
+
+    initial_price = current_qqq_price
+
+benchmark_value = (
+    current_qqq_price
+    / initial_price
+) * 10000
+
+benchmark_snapshot = pd.DataFrame([
+    {
+        "date": today,
+        "qqq_price": round(current_qqq_price, 2),
+        "benchmark_value": round(benchmark_value, 2)
+    }
+])
+
+benchmark = pd.concat(
+    [benchmark, benchmark_snapshot],
+    ignore_index=True
+)
+
+benchmark.to_csv(
+    benchmark_file,
+    index=False
+)
+
 snapshot = pd.DataFrame([
     {
         "date": today,
@@ -159,6 +214,20 @@ portfolio_history = pd.concat(
 portfolio_history.to_csv(
     portfolio_history_file,
     index=False
+)
+
+report.append("\n==========")
+report.append("QQQ BENCHMARK")
+report.append("==========")
+
+report.append(
+    f"QQQ Buy & Hold Value: ${benchmark_value:.2f}"
+)
+
+difference = total_value - benchmark_value
+
+report.append(
+    f"Bot Advantage: ${difference:.2f}"
 )
 
 report.append(
