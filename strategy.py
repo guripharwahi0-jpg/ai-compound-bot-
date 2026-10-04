@@ -77,4 +77,33 @@ for item in rankings:
     if item["signal"] == "SELL":
 
         report.append(
- 
+            f"SELL {item['ticker']} "
+            f"(below 50-day average)"
+        )
+
+report.append(
+    f"TOP PICK FOR NEXT WEEK: {top_pick}"
+)
+
+report.append(
+    f"BUY MORE OF: {top_pick}"
+)
+
+starting_capital = 10000
+
+profit = total_value - starting_capital
+
+report.append(
+    f"\nPortfolio Value: ${total_value:.2f}"
+)
+
+report.append(
+    f"Total Profit: ${profit:.2f}"
+)
+
+final_report = "\n".join(report)
+
+print(final_report)
+
+with open("report.txt", "w") as f:
+    f.write(final_report)
