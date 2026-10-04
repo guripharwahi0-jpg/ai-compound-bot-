@@ -49,6 +49,7 @@ with open("cash.txt", "r") as f:
 
 report = []
 rankings = []
+performance = []
 
 total_value = cash
 
@@ -111,6 +112,23 @@ top_pick = rankings[0]["ticker"]
 
 today = datetime.now().strftime("%Y-%m-%d")
 
+performance.append(
+    {
+        "ticker": ticker,
+        "gain": gain_percent
+    }
+)
+
+best = max(
+    performance,
+    key=lambda x: x["gain"]
+)
+
+worst = min(
+    performance,
+    key=lambda x: x["gain"]
+)
+
 new_trade = pd.DataFrame([
     {
         "date": today,
@@ -154,6 +172,18 @@ report.append(
 starting_capital = 10000
 
 profit = total_value - starting_capital
+
+total_return_pct = (
+    profit / starting_capital
+) * 100
+
+benchmark_return_pct = (
+    (benchmark_value - 10000) / 10000
+) * 100
+
+advantage_pct = (
+    total_return_pct - benchmark_return_pct
+)
 
 qqq_data = yf.download(
     "QQQ",
@@ -273,6 +303,36 @@ if len(portfolio_history) >= 2:
         f"${change:.2f}"
     )
 
+report.append("\n==========")
+report.append("PERFORMANCE METRICS")
+report.append("==========")
+
+report.append(
+    f"Portfolio Return: "
+    f"{total_return_pct:.2f}%"
+)
+
+report.append(
+    f"QQQ Return: "
+    f"{benchmark_return_pct:.2f}%"
+)
+
+report.append(
+    f"Advantage vs QQQ: "
+    f"{advantage_pct:.2f}%"
+)
+
+report.append(
+    f"Best Performer: "
+    f"{best['ticker']} "
+    f"({best['gain']:.2f}%)"
+)
+
+report.append(
+    f"Worst Performer: "
+    f"{worst['ticker']} "
+    f"({worst['gain']:.2f}%)"
+)
 
 final_report = "\n".join(report)
 
