@@ -26,3 +26,9 @@ jobs:
       - name: Run Strategy
         run: |
           python strategy.py
+
+      - name: Upload Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-report
+          path: report.txt
