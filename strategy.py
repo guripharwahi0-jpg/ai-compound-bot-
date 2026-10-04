@@ -184,13 +184,33 @@ qqq_close = qqq_data["Close"].squeeze()
 
 current_qqq_price = float(qqq_close.iloc[-1])
 
-if len(benchmark) > 0:
+if len(benchmark) == 0:
 
-    initial_price = benchmark.iloc[0]["qqq_price"]
+    initial_price = current_qqq_price
+
+    benchmark_snapshot = pd.DataFrame([
+        {
+            "date": today,
+            "qqq_price": round(current_qqq_price, 2),
+            "benchmark_value": 10000
+        }
+    ])
+
+    benchmark = pd.concat(
+        [benchmark, benchmark_snapshot],
+        ignore_index=True
+    )
+
+    benchmark.to_csv(
+        benchmark_file,
+        index=False
+    )
 
 else:
 
-    initial_price = current_qqq_price
+    initial_price = float(
+        benchmark.iloc[0]["qqq_price"]
+    )
 
 benchmark_value = (
     current_qqq_price
@@ -209,7 +229,7 @@ advantage_pct = (
     total_return_pct - benchmark_return_pct
 )
 
-benchmark_snapshot = pd.DataFrame([
+new_row = pd.DataFrame([
     {
         "date": today,
         "qqq_price": round(current_qqq_price, 2),
@@ -218,7 +238,7 @@ benchmark_snapshot = pd.DataFrame([
 ])
 
 benchmark = pd.concat(
-    [benchmark, benchmark_snapshot],
+    [benchmark, new_row],
     ignore_index=True
 )
 
