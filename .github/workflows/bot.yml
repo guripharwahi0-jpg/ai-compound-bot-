@@ -1,5 +1,8 @@
 name: AI Compound Bot
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
 
@@ -26,6 +29,17 @@ jobs:
       - name: Run Strategy
         run: |
           python strategy.py
+
+      - name: Commit History Updates
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add trade_history.csv
+
+          git diff --staged --quiet || git commit -m "Update trade history"
+
+          git push
 
       - name: Upload Report
         uses: actions/upload-artifact@v4
