@@ -7,10 +7,12 @@ with open("cash.txt", "r") as f:
     cash = float(f.read().strip())
 
 report = []
+rankings = []
+
 total_value = cash
 
 report.append("AI COMPOUND BOT REPORT\n")
-report.append(f"Cash: ${cash:.2f}\n")
+report.append(f"Cash Available: ${cash:.2f}\n")
 
 for _, row in portfolio.iterrows():
 
@@ -28,6 +30,13 @@ for _, row in portfolio.iterrows():
     close_prices = data["Close"].squeeze()
 
     current_price = float(close_prices.iloc[-1])
+
+    ma50 = float(close_prices.tail(50).mean())
+
+    score = ((current_price - ma50) / ma50) * 100
+
+    signal = "BUY/HOLD" if current_price > ma50 else "SELL"
+
     value = shares * current_price
 
     gain_percent = (
@@ -37,24 +46,35 @@ for _, row in portfolio.iterrows():
 
     total_value += value
 
+    rankings.append({
+        "ticker": ticker,
+        "score": score,
+        "signal": signal
+    })
+
     report.append(
         f"{ticker}\n"
         f"Shares: {shares}\n"
-        f"Buy Price: ${buy_price:.2f}\n"
         f"Current Price: ${current_price:.2f}\n"
-        f"Position Value: ${value:.2f}\n"
+        f"50-Day Avg: ${ma50:.2f}\n"
+        f"Signal: {signal}\n"
         f"Gain/Loss: {gain_percent:.2f}%\n"
     )
 
-starting_capital = 10000
-profit = total_value - starting_capital
+rankings.sort(
+    key=lambda x: x["score"],
+    reverse=True
+)
 
-report.append(f"\nPortfolio Value: ${total_value:.2f}")
-report.append(f"\nTotal Profit: ${profit:.2f}")
+top_pick = rankings[0]["ticker"]
 
-final_report = "\n".join(report)
+report.append("\n==========")
+report.append("TRADE RECOMMENDATIONS")
+report.append("==========\n")
 
-print(final_report)
+for item in rankings:
 
-with open("report.txt", "w") as f:
-    f.write(final_report)
+    if item["signal"] == "SELL":
+
+        report.append(
+ 
