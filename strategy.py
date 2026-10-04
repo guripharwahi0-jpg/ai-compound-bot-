@@ -86,6 +86,13 @@ for _, row in portfolio.iterrows():
         / buy_price
     ) * 100
 
+    performance.append(
+    {
+        "ticker": ticker,
+        "gain": gain_percent
+    }
+)
+
     total_value += value
 
     rankings.append({
@@ -111,13 +118,6 @@ rankings.sort(
 top_pick = rankings[0]["ticker"]
 
 today = datetime.now().strftime("%Y-%m-%d")
-
-performance.append(
-    {
-        "ticker": ticker,
-        "gain": gain_percent
-    }
-)
 
 best = max(
     performance,
@@ -173,18 +173,6 @@ starting_capital = 10000
 
 profit = total_value - starting_capital
 
-total_return_pct = (
-    profit / starting_capital
-) * 100
-
-benchmark_return_pct = (
-    (benchmark_value - 10000) / 10000
-) * 100
-
-advantage_pct = (
-    total_return_pct - benchmark_return_pct
-)
-
 qqq_data = yf.download(
     "QQQ",
     period="3mo",
@@ -208,6 +196,18 @@ benchmark_value = (
     current_qqq_price
     / initial_price
 ) * 10000
+
+total_return_pct = (
+    profit / starting_capital
+) * 100
+
+benchmark_return_pct = (
+    (benchmark_value - 10000) / 10000
+) * 100
+
+advantage_pct = (
+    total_return_pct - benchmark_return_pct
+)
 
 benchmark_snapshot = pd.DataFrame([
     {
