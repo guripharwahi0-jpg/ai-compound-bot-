@@ -1,10 +1,22 @@
 import yfinance as yf
+import pandas as pd
 
-tickers = ["QQQ", "SPY", "XEQT.TO"]
+portfolio = pd.read_csv("portfolio.csv")
 
-results = []
+with open("cash.txt", "r") as f:
+    cash = float(f.read().strip())
 
-for ticker in tickers:
+report = []
+total_value = cash
+
+report.append("AI COMPOUND BOT REPORT\n")
+report.append(f"Cash: ${cash:.2f}\n")
+
+for _, row in portfolio.iterrows():
+
+    ticker = row["ticker"]
+    shares = row["shares"]
+    buy_price = row["buy_price"]
 
     data = yf.download(
         ticker,
@@ -15,37 +27,34 @@ for ticker in tickers:
 
     close_prices = data["Close"].squeeze()
 
-    current_price = close_prices.iloc[-1]
-    moving_average = close_prices.tail(50).mean()
+    current_price = float(close_prices.iloc[-1])
+    value = shares * current_price
 
-    signal = "BUY/HOLD" if current_price > moving_average else "SELL"
+    gain_percent = (
+        (current_price - buy_price)
+        / buy_price
+    ) * 100
 
-    score = ((current_price - moving_average) / moving_average) * 100
+    total_value += value
 
-    results.append({
-        "ticker": ticker,
-        "price": current_price,
-        "ma50": moving_average,
-        "signal": signal,
-        "score": score
-    })
-
-results.sort(key=lambda x: x["score"], reverse=True)
-
-report = "\nAI COMPOUND BOT REPORT\n\n"
-
-for r in results:
-    report += (
-        f"{r['ticker']}\n"
-        f"Price: ${r['price']:.2f}\n"
-        f"50-Day Avg: ${r['ma50']:.2f}\n"
-        f"Signal: {r['signal']}\n"
-        f"Score: {r['score']:.2f}%\n\n"
+    report.append(
+        f"{ticker}\n"
+        f"Shares: {shares}\n"
+        f"Buy Price: ${buy_price:.2f}\n"
+        f"Current Price: ${current_price:.2f}\n"
+        f"Position Value: ${value:.2f}\n"
+        f"Gain/Loss: {gain_percent:.2f}%\n"
     )
 
-report += f"TOP PICK: {results[0]['ticker']}\n"
+starting_capital = 10000
+profit = total_value - starting_capital
 
-print(report)
+report.append(f"\nPortfolio Value: ${total_value:.2f}")
+report.append(f"\nTotal Profit: ${profit:.2f}")
+
+final_report = "\n".join(report)
+
+print(final_report)
 
 with open("report.txt", "w") as f:
-    f.write(report)
+    f.write(final_report)
