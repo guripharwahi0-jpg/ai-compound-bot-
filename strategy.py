@@ -14,7 +14,23 @@ else:
     history = pd.DataFrame(
         columns=["date", "action", "ticker", "reason"]
     )
-    
+
+portfolio_history_file = "portfolio_history.csv"
+
+if os.path.exists(portfolio_history_file):
+    portfolio_history = pd.read_csv(
+        portfolio_history_file
+    )
+else:
+    portfolio_history = pd.DataFrame(
+        columns=[
+            "date",
+            "portfolio_value",
+            "cash",
+            "profit"
+        ]
+    )
+
 with open("cash.txt", "r") as f:
     cash = float(f.read().strip())
 
@@ -126,6 +142,25 @@ starting_capital = 10000
 
 profit = total_value - starting_capital
 
+snapshot = pd.DataFrame([
+    {
+        "date": today,
+        "portfolio_value": round(total_value, 2),
+        "cash": round(cash, 2),
+        "profit": round(profit, 2)
+    }
+])
+
+portfolio_history = pd.concat(
+    [portfolio_history, snapshot],
+    ignore_index=True
+)
+
+portfolio_history.to_csv(
+    portfolio_history_file,
+    index=False
+)
+
 report.append(
     f"\nPortfolio Value: ${total_value:.2f}"
 )
@@ -145,6 +180,30 @@ report.append(
 report.append(
     f"Latest Recommendation: {top_pick}"
 )
+
+report.append("\n==========")
+report.append("PORTFOLIO HISTORY")
+report.append("==========")
+
+report.append(
+    f"Snapshots Recorded: "
+    f"{len(portfolio_history)}"
+)
+
+if len(portfolio_history) >= 2:
+
+    previous_value = (
+        portfolio_history.iloc[-2]
+        ["portfolio_value"]
+    )
+
+    change = total_value - previous_value
+
+    report.append(
+        f"Change Since Last Snapshot: "
+        f"${change:.2f}"
+    )
+
 
 final_report = "\n".join(report)
 
