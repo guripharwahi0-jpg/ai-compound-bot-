@@ -5,12 +5,18 @@ tickers = ["QQQ", "SPY", "XEQT.TO"]
 print("\nAI Compound Bot\n")
 
 for ticker in tickers:
-    data = yf.download(ticker, period="3mo", auto_adjust=True, progress=False)
 
-    close = data["Close"]
+    data = yf.download(
+        ticker,
+        period="3mo",
+        auto_adjust=True,
+        progress=False
+    )
 
-    current_price = float(close.iloc[-1])
-    moving_average = float(close.tail(50).mean())
+    close_prices = data["Close"].squeeze()
+
+    current_price = close_prices.iloc[-1]
+    moving_average = close_prices.tail(50).mean()
 
     signal = "BUY/HOLD" if current_price > moving_average else "SELL"
 
